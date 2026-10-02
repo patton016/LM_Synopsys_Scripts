@@ -1,0 +1,96 @@
+#!/bin/bash
+# ============================================================
+# install.conf.example — 顶层配置模板（对应文中 1.1~1.14 节安装内容）
+# 依据《【老刘炼芯】十款Synopsys芯片设计软件的部署》
+#
+# 使用方式：复制本文件为 install.conf 后按需修改
+#   cp install.conf.example install.conf && vim install.conf
+# （install.conf 为本地配置，已被 .gitignore 排除，不会提交到仓库）
+# ============================================================
+
+# ---------- 安装开关（yes / no）----------
+# Installer（安装引导工具，必须先装）
+INSTALL_INSTALLER=yes
+# SCL（License 许可工具，建议在装其他软件前先完成 License 认证）
+INSTALL_SCL=yes
+# 十款芯片设计软件
+INSTALL_VCS=yes
+INSTALL_VERDI=yes
+INSTALL_SPYGLASS=yes
+INSTALL_DC=yes
+INSTALL_FORMALITY=yes
+INSTALL_FC=yes
+INSTALL_ICC2=yes
+INSTALL_PT=yes
+INSTALL_LC=yes
+INSTALL_HSPICE=yes
+# 完成 SCL 安装后是否立即执行 License 认证部署（如License已确认准备好则推荐 yes，见文中 1.4 节末建议，否则建议为 no）
+SETUP_LICENSE_AFTER_SCL=no
+
+# ---------- 路径 ----------
+# 安装包存放目录，请根据您的具体情况修改（文中：/home/<user>/下载/AlmaLinux_ASIC/Synopsys/）
+PKG_BASE="/home/<your_user>/Downloads/Synopsys"
+# 安装目标根目录，请根据您的具体情况修改（文中 1.3 节 Synopsys_DIR）
+INSTALL_ROOT="/home/<your_user>/usr/synopsys"
+# 脚本自身所在目录（自动探测，无需修改）
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# ---------- 版本（文中 1.1 / 表一 / 1.3 节）----------
+INSTALLER_VERSION="5.9"
+SCL_VERSION="2025.03"
+# SCL 安装包目录名后缀（按实际目录名填写；如目录为 vcs_vV-2023.12-SP1 则填 "V-2023.12-SP1"，无后缀留空）
+SCL_PKG_SUFFIX=""
+VCS_VERSION="V-2023.12-SP1"
+VERDI_VERSION="V-2023.12-SP2"
+SPYGLASS_VERSION="V-2023.12-SP1"
+DC_VERSION="V-2023.12-SP3"
+FM_VERSION="V-2023.12-SP3"
+FC_VERSION="V-2023.12"
+ICC2_VERSION="V-2023.12-SP3"
+PT_VERSION="V-2023.12-SP5-1"
+LC_VERSION="V-2023.12-SP3"
+HSPICE_VERSION="V-2023.12-SP2"
+# VIP 版本（文中 1.3 节 VIP 段：DESIGNWARE_HOME=$Synopsys_DIR/vip/V-2023.12，无 SP 后缀）
+VIP_VERSION="V-2023.12"
+
+# ---------- License 相关（文中 1.3 / 2.1 / 2.2 节）----------
+# 主机名：须与本机 hostname 及 License 文件中登记的 SERVER 主机名一致
+HOSTNAME="<your-hostname>"
+# License 服务端口（文中 30000@主机名）
+LICENSE_PORT="30000"
+# Site ID（文中 1.2 通用流程第 5 步，默认 000）
+# Site ID number（Installer 安装时按此值使用；Synopsys 默认 000，
+# 如你的 License 证书右上角 Site ID 不是 000，请改为实际值）
+SITE_ID="000"
+# 当前登录用户（systemd 服务 User/Group 用；root 执行时取 sudo 发起人，一般无需修改）
+RUN_USER="${SUDO_USER:-$(logname 2>/dev/null || echo root)}"
+# License 文件（需通过官方正规渠道或公司授权获得；部署前请放入脚本目录下的 license 文件夹，
+#   即 $SCRIPT_DIR/license/Synopsys.dat；运行 setup_license.sh 时脚本会自动复制到下面的部署路径）
+LICENSE_DAT_SOURCE="$SCRIPT_DIR/license/Synopsys.dat"
+# 部署后的 License 文件位置（自动拼接，一般无需修改）
+LICENSE_FILE="$INSTALL_ROOT/scl/$SCL_VERSION/admin/license/Synopsys.dat"
+LOG_DIR="$INSTALL_ROOT/scl/$SCL_VERSION/admin/logs"
+LOG_FILE="$LOG_DIR/snps_license.log"
+
+# ---------- Installer 安装方式 ----------
+# 软件安装一律使用 Installer 5.9 命令行模式（-source/-target 直传，无交互），
+# Site ID / 附加交互应答通过 stdin 管道喂入（见 common.sh install_one），不依赖 expect。
+
+# ---------- 可选：VIP 环境变量（文中 1.3 节 bashrc 有 VIP 段，但本篇未安装 VIP 软件包）----------
+# 若你另外安装了 VIP 包，可置 yes 注入 DESIGNWARE_HOME
+ENABLE_VIP_ENV=yes
+
+# ---------- 校验特性清单（check_license.sh 用；按需增删）----------
+# 格式：软件名:特性名（多个特性用空格分隔）
+CHECK_FEATURES="
+VCS:VCSCompiler_Net VCSRuntime_Net VCS-BASE-COMPILE VCS-BASE-RUNTIME
+Verdi:Verdi VERDI-ULTRA
+Spyglass:OEM-spyglass_lc
+DC:Design-Compiler
+Formality:Formality Formality-Advanced
+FC:Fusion-Compiler-AG Fusion-Compiler-BE Fusion-Compiler-FE Fusion-Compiler-ML
+ICC2:ICCompilerII ICCompilerIIs-AdvFeatures ICCompilerIIs-AdvFeatures
+PrimeTime:PrimeTime PrimeTime-Plus
+LC:Library-Compiler Library-Compiler-Advanced
+Hspice:hspice
+"

@@ -1,0 +1,20 @@
+[Unit]
+Description=Synopsys License Server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+User=__RUN_USER__
+Group=__RUN_GROUP__
+
+#增加10秒网络依赖启动延时
+ExecStartPre=/bin/sleep 10
+
+ExecStart=__LICENSE_DIR__/start_license.sh start
+ExecStop=__LICENSE_DIR__/start_license.sh stop
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,29 @@
+# ============================================================
+# Git 发布忽略清单（LM_Synopsys_Scripts/install）
+# ============================================================
+
+# ---- 真实 License 文件（Synopsys 商业授权，含 SERVER 主机名/MAC/INCREMENT 密钥，禁止公开）----
+license/Synopsys.dat
+license/*.dat
+
+# ---- 用户本地配置（仓库只提交脱敏模板 install.conf.example）----
+install.conf
+
+# ---- 运行日志与 Installer 噪音产物（由脚本运行时生成）----
+run.log
+installer.log
+*.log
+*.out
+flex*.log
+verdiLog/
+snps_installer_temp_*/
+
+# ---- 运行验证产物（vcs_smoke 每次运行重建）----
+verify/vcs_smoke/work/
+verify/vcs_smoke/result/
+
+# ---- 临时/系统文件 ----
+.DS_Store
+Thumbs.db
+*.swp
+*~
